@@ -82,46 +82,6 @@ npx uniapp-weixin-skill install codex
 
 AI 会根据你的工具自动给出对应的安装命令和步骤。
 
-### 方式四：AI 提示词安装（不依赖插件，通用方案）
-
-将 SKILL.md 内容注入 AI 对话上下文：
-
-**AGENTS.md / CLAUDE.md（持久生效）**
-
-在项目 AGENTS.md 末尾追加 SKILL.md 中 `---` 分隔符之后的内容（不含 YAML 头）。
-
-**单次会话 prompt**
-
-在请求 AI 编码前直接粘贴核心规则摘要：
-
-```
-请遵守以下 uni-app 微信小程序 CSS 兼容规则：
-1. 选择器白名单：只使用 Class 选择器，禁止 #id / div / [attr] / *
-2. 禁用 @font-face，改用 uni.loadFontFace()
-3. 禁用 var() 做主题，改用动态 Class + 条件样式
-4. 修改子组件必须使用 ::v-deep
-5. 原子化 CSS 需配置 weapp-tailwindcss / unocss-preset-weapp
-6. 平台特有样式放在 #ifdef MP-WEIXIN 内
-```
-
-## 构建修复脚本
-
-在 `package.json` 中串联执行：
-
-```json
-{
-  "scripts": {
-    "build:mp-weixin": "uni build -p mp-weixin && node scripts/fix-wxss.js && node scripts/fix-wxml.js"
-  }
-}
-```
-
-需要安装 `glob` 依赖：
-
-```bash
-npm install --save-dev glob
-```
-
 ## License
 
 MIT
