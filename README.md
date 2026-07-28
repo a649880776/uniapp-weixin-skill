@@ -88,19 +88,7 @@ AI 会根据你的工具自动给出对应的安装命令和步骤。
 
 **AGENTS.md / CLAUDE.md（持久生效）**
 
-在项目 AGENTS.md 末尾追加以下内容（不含 YAML 头）：
-
-<details>
-<summary>点击展开 SKILL.md 内容（不含 YAML 头）</summary>
-
-```markdown
-# uni-app 微信小程序排错 Skill
-...
-```
-
-</details>
-
-然后从 `skills/uniapp-weixin-skill/SKILL.md` 中复制 `---` 之后的内容粘贴到 AGENTS.md。
+在项目 AGENTS.md 末尾追加 SKILL.md 中 `---` 分隔符之后的内容（不含 YAML 头）。
 
 **单次会话 prompt**
 
