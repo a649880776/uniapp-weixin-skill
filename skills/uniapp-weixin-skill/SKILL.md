@@ -54,6 +54,7 @@ H5 正常的代码在小程序端经常翻车。排查任何问题前，先确�
 - **checkbox/radio 样式**：原生组件，样式只能在 App.vue 里全局改
 - **text-align:end 在真机失效**：input 输入框改用其他对齐方式确保输入时光标位置正确
 - **uni-popup 遮罩下页面滚动**：需在真机上验证修复效果
+- **backdrop-filter 不渲染**：微信小程序渲染引擎不支持，用 `background: rgba(...)` 替代玻璃拟态效果
 
 
 ## 四、API 与运行时差异
@@ -84,9 +85,69 @@ H5 正常的代码在小程序端经常翻车。排查任何问题前，先确�
 3. **HTTP 协议不合规**：自定义域名配有效 SSL 证书
 
 
-## 七、排查工作流
+## 七、样式安全规则（编码约束）
 
+### 选择器白名单
+- **只允许**使用 Class 选择器（`.header`、`.btn-primary`）
+- **禁止**以下选择器：ID 选择器 `#id`、标签选择器 `div`/`span`/`p`、属性选择器 `[type=text]`、通用选择器 `*`
+- 旧代码中见到上述选择器，必须主动警告并重写为 Class
 
+### @font-face
+- **禁止**直接使用 `@font-face`（WXSS 不支持）
+- 替代方案：图标字体转 Base64 内联到 CSS；艺术字体用 `uni.loadFontFace({ family, source: 'url(...)' })` 动态加载
+
+### 全局主题/换肤
+- **禁止**使用 CSS 变量 `var(--xxx)` 做全局主题（低版本微信客户端不兼容）
+- 替代方案：动态 Class + 条件样式。`App.vue` 绑定 `:class="['app-root', 'theme-' + theme]"`，样式文件定义 `.theme-light .header {}` / `.theme-dark .header {}`
+
+### ::v-deep 样式穿透
+- 修改子组件（尤其是第三方 UI 库）样式时**必须使用** `::v-deep`
+- 禁止使用 `>>>`、`/deep/`
+
+### 原子化 CSS 类名转义
+- 若使用 Tailwind / UnoCSS 原子化类名（如 `w-[30px]`），必须配置转义工具：
+  - `weapp-tailwindcss` 或 `unocss-preset-weapp`
+- **未安装时**主动提示安装并给出配置指令
+
+### 平台特有样式与路径
+- 平台特有样式必须放在条件编译块内：
+  ```scss
+  /* #ifdef MP-WEIXIN */
+  ...
+  /* #endif */
+  ```
+- 样式文件引用路径统一以 `~@/` 别名开头
+
+## 八、构建兜底与主动防御
+
+### WXML 转义修复脚本（必须主动生成）
+检测到项目使用了 Tailwind 任意值或原子化 CSS 时，**必须主动生成** [`scripts/fix-wxml.js`](scripts/fix-wxml.js) 文件，并**提示用户修改** `package.json` 的 `build:mp-weixin` 命令，追加 `&& node scripts/fix-wxml.js`：
+
+```json
+{
+  "scripts": {
+    "build:mp-weixin": "uni build -p mp-weixin && node scripts/fix-wxml.js"
+  }
+}
+```
+
+> 脚本位置：`scripts/fix-wxml.js`（与 SKILL.md 同目录）
+
+### styleIsolation 配置
+频繁遇到样式穿透问题时，可配置 `styleIsolation` 来减少穿透代码量：
+```json
+// pages.json
+{
+  "globalStyle": {
+    "styleIsolation": "shared"
+  }
+}
+```
+注意：这会放宽样式隔离，需谨慎使用。
+
+## 九、排查与自查工作流
+
+### 排查顺序
 收到报错时，按此顺序排查：
 1. 看控制台报错 → 定位文件行号
 2. 判断是否使用了浏览器专有 API（fetch/window/document）
@@ -95,6 +156,18 @@ H5 正常的代码在小程序端经常翻车。排查任何问题前，先确�
 5. 用真机调试抓运行时堆栈
 6. 逐个注释可疑代码块缩小范围
 
+### AI 交付代码前自查 6 项
+- □ 选择器：是否只有 Class？有没有 ID / 标签 / 属性 / 通配符？
+- □ 主题：是否意外使用了 `var()` 做全局换肤？
+- □ 字体：是否写了 `@font-face`？是否改用了 `uni.loadFontFace` 或 Base64？
+- □ 穿透：修改子组件样式时，是否加了 `::v-deep`？
+- □ 类名转义：如果用了原子化类名，是否配置了转义工具？
+- □ 构建脚本：是否需要在 `package.json` 中添加 WXML 修复钩子？
 
-给出修复方案时，优先提供**状态驱动**的写法，避免命令式 DOM/ref 操作；
-涉及样式的，提醒用户**真机验证**（很多 bug 模拟器不出现）。
+### 主动预警话术
+| 场景 | 预警 |
+|---|---|
+| 标签选择器 | ⚠️ 检测到 `div` 标签选择器，这在 WXSS 中不合法，建议改为 Class 选择器如 `.container` |
+| @font-face | ⚠️ `@font-face` 在小程序中不支持，建议用 `uni.loadFontFace()` 或 Base64 |
+| 换肤 | ⚠️ 请不要在小程序中使用 `var()` 做全局主题，我将生成动态 Class 换肤方案 |
+| 构建前/原子类 | ⚠️ 检测到使用了 Tailwind 任意值，将自动生成 WXML 修复脚本配置到构建流程 |
