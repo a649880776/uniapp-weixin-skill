@@ -18,35 +18,102 @@ uni-app 编译到微信小程序（mp-weixin）的排错指南。涵盖双线程
 
 ## 安装
 
+四种方式选其一。
+
+### 方式一：项目安装（OpenCode 自动发现）
+
+**适用工具**：OpenCode
+
 ```bash
 npm install uniapp-weixin-skill
 ```
 
-### 项目安装（OpenCode 自动发现）
+无需其他操作，OpenCode 自动从 `node_modules` 加载。
 
-```bash
-npm install uniapp-weixin-skill
-```
+验证：在 OpenCode 会话中输入 `/uni-mp-troubleshoot`，应触发 skill 激活。
 
-OpenCode 自动从 `node_modules` 发现并加载本 skill，无需额外配置。
+### 方式二：全局安装 + CLI 部署到各工具
 
-### 全局安装（供多个工具使用）
+**适用工具**：OpenCode / Cursor / Claude Code
+
+1. 全局安装：
 
 ```bash
 npm install -g uniapp-weixin-skill
 ```
 
-再用 CLI 部署到对应工具：
+2. 按工具执行对应命令：
 
+**OpenCode**
 ```bash
-# OpenCode → ~/.config/opencode/skills/
 npx uniapp-weixin-skill install opencode
+```
+→ 复制到 `~/.config/opencode/skills/`
+→ 验证：启动 OpenCode，输入 `/uni-mp-troubleshoot`
 
-# Cursor → 项目 .cursor/rules/
+**Cursor**
+```bash
+cd your-project
 npx uniapp-weixin-skill install cursor
+```
+→ 生成 `.cursor/rules/uni-mp-troubleshoot.mdc`
+→ 验证：编辑 `.vue` 文件，Cursor 自动应用规则
 
-# Claude Code (Codex) → ~/.claude/plugins/
+**Claude Code (Codex)**
+```bash
 npx uniapp-weixin-skill install codex
+```
+→ 复制到 `~/.claude/plugins/`
+→ 验证：启动 Codex，提问 uni-app 样式问题，应自动引用规则
+
+### 方式三：AI 提示词安装（让 AI 自动选择安装方式）
+
+不确定该用哪种方式？直接把工具名告诉 AI：
+
+```
+我在使用 [工具名称]，请告诉我如何安装 uniapp-weixin-skill 技能包。
+```
+
+例如：
+
+```
+我在使用 Cursor，请告诉我如何安装 uniapp-weixin-skill 技能包。
+```
+
+AI 会根据你的工具自动给出对应的安装命令和步骤。
+
+### 方式四：AI 提示词安装（不依赖插件，通用方案）
+
+将 SKILL.md 内容注入 AI 对话上下文：
+
+**AGENTS.md / CLAUDE.md（持久生效）**
+
+在项目 AGENTS.md 末尾追加以下内容（不含 YAML 头）：
+
+<details>
+<summary>点击展开 SKILL.md 内容（不含 YAML 头）</summary>
+
+```markdown
+# uni-app 微信小程序排错 Skill
+...
+```
+
+</details>
+
+然后从 `skills/uniapp-weixin-skill/SKILL.md` 中复制 `---` 之后的内容粘贴到 AGENTS.md。
+
+**单次会话 prompt**
+
+在请求 AI 编码前直接粘贴核心规则摘要：
+
+```
+请遵守以下 uni-app 微信小程序 CSS 兼容规则：
+1. 选择器白名单：只使用 Class 选择器，禁止 #id / div / [attr] / *
+2. 禁用 @font-face，改用 uni.loadFontFace()
+3. 禁用 var() 做主题，改用动态 Class + 条件样式
+4. 修改子组件必须使用 ::v-deep
+5. 原子化 CSS 需配置 weapp-tailwindcss / unocss-preset-weapp
+6. 平台特有样式放在 #ifdef MP-WEIXIN 内
 ```
 
 ## 构建修复脚本
