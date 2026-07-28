@@ -82,6 +82,12 @@ npx uniapp-weixin-skill install codex
 
 AI 会根据你的工具自动给出对应的安装命令和步骤。
 
+需要安装 `glob` 依赖：
+
+```bash
+npm install --save-dev glob
+```
+
 ## License
 
 MIT
