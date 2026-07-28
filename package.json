@@ -15,7 +15,11 @@
   ],
   "license": "MIT",
   "author": "",
-  "homepage": "https://github.com/a649880776/uniapp-weixin-s
+  "homepage": "https://github.com/a649880776/uniapp-weixin-skill",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a649880776/uniapp-weixin-skill.git"
+  },
   "files": [
     "AGENTS.md",
     "skills/",
