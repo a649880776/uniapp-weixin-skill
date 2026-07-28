@@ -1,6 +1,6 @@
 {
   "name": "uniapp-weixin-skill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "UniApp mp-weixin（微信小程序）排错 Skill — 涵盖双线程架构、生命周期、样式布局、API 差异、真机调试等常见问题的排查指南",
   "keywords": [
     "opencode-plugin",
@@ -26,7 +26,9 @@
     "LICENSE"
   ],
   "pi": {
-    "skills": ["./skills"]
+    "skills": [
+      "./skills"
+    ]
   },
   "publishConfig": {
     "access": "public"
