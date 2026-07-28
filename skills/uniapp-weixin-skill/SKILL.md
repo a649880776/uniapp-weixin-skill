@@ -120,18 +120,24 @@ H5 正常的代码在小程序端经常翻车。排查任何问题前，先确�
 
 ## 八、构建兜底与主动防御
 
-### WXML 转义修复脚本（必须主动生成）
-检测到项目使用了 Tailwind 任意值或原子化 CSS 时，**必须主动生成** [`scripts/fix-wxml.js`](scripts/fix-wxml.js) 文件，并**提示用户修改** `package.json` 的 `build:mp-weixin` 命令，追加 `&& node scripts/fix-wxml.js`：
+### 构建修复脚本二件套（必须主动生成）
+
+检测到项目使用了 Tailwind 任意值或原子化 CSS 时，**必须主动生成**以下两个脚本，并**提示用户修改** `package.json` 的 `build:mp-weixin` 命令，串联执行：
+
+| 脚本 | 作用范围 | 修复内容 |
+|---|---|---|
+| [`scripts/fix-wxss.js`](scripts/fix-wxss.js) | `.wxss` | `*` 选择器、`@font-face`、`var()`、转义类名 |
+| [`scripts/fix-wxml.js`](scripts/fix-wxml.js) | `.wxml` | 非法转义双引号 `\"` |
 
 ```json
 {
   "scripts": {
-    "build:mp-weixin": "uni build -p mp-weixin && node scripts/fix-wxml.js"
+    "build:mp-weixin": "uni build -p mp-weixin && node scripts/fix-wxss.js && node scripts/fix-wxml.js"
   }
 }
 ```
 
-> 脚本位置：`scripts/fix-wxml.js`（与 SKILL.md 同目录）
+> 脚本位置：`scripts/fix-wxss.js`、`scripts/fix-wxml.js`（与 SKILL.md 同目录）
 
 ### styleIsolation 配置
 频繁遇到样式穿透问题时，可配置 `styleIsolation` 来减少穿透代码量：

@@ -23,8 +23,12 @@
   "files": [
     "AGENTS.md",
     "skills/",
+    "bin/",
     "LICENSE"
   ],
+  "bin": {
+    "uniapp-weixin-skill": "bin/index.js"
+  },
   "pi": {
     "skills": [
       "./skills"
