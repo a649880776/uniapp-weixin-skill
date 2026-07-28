@@ -6,14 +6,14 @@ const os = require('os')
 const SKILL_FILE = path.join(__dirname, '..', 'skills', 'uniapp-weixin-skill', 'SKILL.md')
 const CURSOR_RULES = path.join(process.cwd(), '.cursor', 'rules')
 const CODEX_PLUGINS = path.join(os.homedir(), '.claude', 'plugins')
-const OPENCODE_SKILLS = path.join(process.cwd(), '.opencode', 'skills')
+const OPENCODE_GLOBAL = path.join(os.homedir(), '.config', 'opencode', 'skills')
 
 const tool = process.argv[3]
 const action = process.argv[2]
 
 if (action !== 'install') {
   console.log(`Usage: npx uniapp-weixin-skill install <tool>
-Tools: cursor, codex, opencode-local`)
+Tools: cursor, codex, opencode`)
   process.exit(1)
 }
 
@@ -39,8 +39,8 @@ ${skill}`
     console.log(`Installed → ${dest}`)
     break
   }
-  case 'opencode-local': {
-    const dest = path.join(OPENCODE_SKILLS, 'uniapp-weixin-skill', 'SKILL.md')
+  case 'opencode': {
+    const dest = path.join(OPENCODE_GLOBAL, 'uniapp-weixin-skill', 'SKILL.md')
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.copyFileSync(SKILL_FILE, dest)
     console.log(`Installed → ${dest}`)
@@ -48,6 +48,6 @@ ${skill}`
   }
   default:
     console.log(`Unknown tool: ${tool}
-Available: cursor, codex, opencode-local`)
+Available: cursor, codex, opencode`)
     process.exit(1)
 }
