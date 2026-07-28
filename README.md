@@ -1,17 +1,6 @@
 # uniapp-weixin-skill
 
-uni-app 编译到微信小程序（mp-weixin）的排错 Skill。
-
-## 解决的问题
-
-uni-app 编译到微信小程序时，由于小程序的**双线程架构**（逻辑层 JS ↔ 视图层 WXML，通过 setData 通信，禁用 DOM），H5 正常的代码在小程序端经常出现问题。本 skill 提供系统化的排查指南，覆盖：
-
-- **架构级认知** — 双线程模型、状态驱动 vs 命令式操作
-- **生命周期与时序** — onLoad/onShow/onReady/mounted 执行顺序
-- **样式与布局坑** — 全屏覆盖、iOS margin-bottom、时间格式化、rpx/px 计算等
-- **API 与运行时差异** — fetch/DOM 不可用、存储限制、动态引入、条件编译
-- **真机调试专项** — iOS 白屏、AppSecret 泄露、HTTP 协议合规
-- **排查工作流** — 按步骤定位问题
+uni-app 编译到微信小程序（mp-weixin）的排错指南。涵盖双线程架构、生命周期、样式布局、API 差异、真机调试等场景的系统化排查方案。
 
 ## 安装
 
@@ -19,23 +8,69 @@ uni-app 编译到微信小程序时，由于小程序的**双线程架构**（�
 npm install uniapp-weixin-skill
 ```
 
-opencode 会自动发现已安装 npm 包中的 skill。
+包内容：
 
-## 使用
+| 路径 | 用途 |
+|---|---|
+| `skills/uniapp-weixin-skill/SKILL.md` | 主技能文件 |
+| `scripts/fix-wxss.js` | 构建后修复 WXSS 兼容性（\*、@font-face、var()、转义类名） |
+| `scripts/fix-wxml.js` | 构建后修复 WXML 中转义双引号 |
+| `bin/index.js` | 多工具安装 CLI `npx uniapp-weixin-skill install <tool>` |
 
-在 opencode 中加载本 skill 后，当遇到以下问题时自动启用：
+## 各工具安装方式
 
-- 编译报错
-- 真机白屏
-- 样式错乱
-- API 不生效
-- iOS/Android 差异
-- 生命周期时序问题
+### OpenCode（自动发现）
 
-## 命令
+安装后 OpenCode 自动从 `node_modules` 发现并加载本 skill，无需额外操作。
 
+### Cursor
+
+```bash
+npx uniapp-weixin-skill install cursor
 ```
-/uni-mp-troubleshoot   手动触发微信小程序排错
+
+在项目 `.cursor/rules/` 下生成 `uni-mp-troubleshoot.mdc`，编辑 `.vue`/`.css`/`.scss`/`.less`/`.wxss`/`.wxml` 文件时自动激活。
+
+### Claude Code (Codex)
+
+```bash
+npx uniapp-weixin-skill install codex
+```
+
+复制到 `~/.claude/plugins/uniapp-weixin-skill/SKILL.md`。
+
+### OpenCode（项目本地副本）
+
+```bash
+npx uniapp-weixin-skill install opencode-local
+```
+
+复制到项目 `.opencode/skills/uniapp-weixin-skill/SKILL.md`，用于不依赖 npm 的场景。
+
+## 用法
+
+本 skill 在检测到 `uni-app` / `mp-weixin` / `小程序` 相关上下文时自动激活。包含：
+
+- **七、样式安全规则** — CSS/SCSS/Less 编码约束（选择器白名单、字体、主题、穿透、原子化 CSS 转义）
+- **八、构建兜底与主动防御** — `fix-wxss.js` + `fix-wxml.js` 构建脚本、`styleIsolation` 配置
+- **九、排查与自查工作流** — 排查顺序、AI 自查 6 项清单、主动预警话术
+
+## 构建修复脚本
+
+在 `package.json` 中串联执行：
+
+```json
+{
+  "scripts": {
+    "build:mp-weixin": "uni build -p mp-weixin && node scripts/fix-wxss.js && node scripts/fix-wxml.js"
+  }
+}
+```
+
+需要安装 `glob` 依赖：
+
+```bash
+npm install --save-dev glob
 ```
 
 ## License
